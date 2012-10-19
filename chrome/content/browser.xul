@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://GClean/skin/my_style.css" type="text/css"?>
+<!DOCTYPE gclean SYSTEM "chrome://gclean/locale/translations.dtd">
+<overlay id="sample" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		<script src="gClean.js" />
+
+
+		
+		
+		<!--keyset>
+			<key id="g-clean-run-key" modifiers="accel alt shift" key="L" oncommand="gClean.run();"/>
+		</keyset-->
+		
+		<statusbar id="status-bar">
+			<statusbarpanel id="g-clean-status-bar-icon" class="statusbarpanel-iconic" src="chrome://gclean/skin/status-bar.png" tooltiptext="&rungclean;" onclick="gClean.run(document)" />
+		</statusbar>
+		
+		<!--toolbarpalette id="BrowserToolbarPalette">
+			<toolbarbutton id="g-clean-toolbar-button" label="G Clean" tooltiptext="&rungclean;" oncommand="gClean.run()"/>
+		</toolbarpalette-->
+</overlay>

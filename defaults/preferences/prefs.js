@@ -1,0 +1,1 @@
+pref("extensions.gclean.autorun", true);

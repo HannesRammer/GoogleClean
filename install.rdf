@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+	<Description about="urn:mozilla:install-manifest">
+		<em:id>hannes.rammer@gmail.com</em:id>
+		<em:name>G Clean</em:name>
+		<em:version>2.5.4</em:version>
+		<em:type>2</em:type>
+		<em:creator>Hannes Rammer</em:creator>
+		<em:description>Hide unwanted search result in google.+ Color google.</em:description>
+		<!--em:homepageURL>http://www..com/</em:homepageURL-->
+		<em:optionsURL>chrome://gclean/content/options.xul</em:optionsURL>
+
+		<em:targetApplication>
+			<Description>
+				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+				<em:minVersion>4.0</em:minVersion>
+				<em:maxVersion>16.*</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+	</Description>      
+</RDF>
