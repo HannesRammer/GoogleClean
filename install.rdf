@@ -5,7 +5,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>hannes.rammer@gmail.com</em:id>
 		<em:name>G Clean</em:name>
-		<em:version>2.5.4</em:version>
+		<em:version>2.5.6</em:version>
 		<em:type>2</em:type>
 		<em:creator>Hannes Rammer</em:creator>
 		<em:description>Hide unwanted search result in google.+ Color google.</em:description>

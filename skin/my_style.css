@@ -2570,33 +2570,33 @@ padding: 5px;
 .max {
     left:64px;
 }
-
+.r_here, .r_domain , .r_always, .a_here, .a_domain , .a_always ,.min,.max{
+    width: 19px !important;
+    height: 16px !important;
+}
 .r_here, .r_domain , .r_always, .a_here, .a_domain , .a_always ,.min,.max,.off,.on{
     cursor: pointer !important;
     position:absolute !important;
     z-index:1 !important;
     text-align: center !important;
-    border-radius: 2px 2px 2px 2px !important;
-    -moz-border-radius: 2px 2px 2px 2px !important;
-    border: 1px solid #BEBEBE !important;
     padding: 1px !important;
 
 }
-.r_here, .r_domain , .r_always, .a_here, .a_domain , .a_always ,.min,.max{
-    width: 17px !important;
-}
-.r_here,.r_always,.r_domain,.max,.on{
-    background: none repeat scroll 0 0 #ccffcc !important;
+
+/*.r_here,.r_always,.r_domain,.max,.on{
+    background: -moz-linear-gradient(center top , #00FF00 -45%, #00FF00 8%, #00FF00 -29%, #000000 176%, #000000 145%) !important;
     color: #123 !important;
     text-shadow: 0 0 0.2em #00ff00, 0 0 0.2em #00ff00, 0 0 0.2em #00ff00 !important;
-}
-.a_here,.a_always,.a_domain,.min,.off{
-    background: none repeat scroll 0 0 #EFEFEF !important;
-    color: #f99 !important;
+} */
+/*.a_here,.a_always,.a_domain,.min,.off{
+
+    background: -moz-linear-gradient(center top , #FF0000 -45%, #FF0000 8%, #FF0000 -29%, #000000 176%, #000000 145%) !important;
+    color: #fff !important;
     text-shadow: 0 -1px #CCCCCC, 1px 0 #CCCCCC, 0 1px #CCCCCC, -1px 0 #CCCCCC  !important;
-}
+}*/
 .a_here:hover,.a_always:hover,.a_domain:hover,.min:hover{
     color: #123 !important;
+
 }
 
 
@@ -2613,6 +2613,28 @@ padding: 5px;
     right:4px !important;
     top:4px !important;
 }
+.r_here {
+    background: url("chrome://gclean/skin/ah.jpg") no-repeat scroll 0 0 transparent;
+}
+.r_always {
+    background: url("chrome://gclean/skin/aa.jpg") no-repeat scroll 0 0 transparent;
+}
+
+.r_domain {
+    background: url("chrome://gclean/skin/ad.jpg") no-repeat scroll 0 0 transparent;
+}
+
+.a_here {
+    background: url("chrome://gclean/skin/rh.jpg") no-repeat scroll 0 0 transparent;
+}
+.a_always {
+    background: url("chrome://gclean/skin/ra.jpg") no-repeat scroll 0 0 transparent;
+}
+
+.a_domain {
+    background: url("chrome://gclean/skin/rd.jpg") no-repeat scroll 0 0 transparent;
+}
+
 #style_border{
     left:223px !important;
     top:-2px !important;

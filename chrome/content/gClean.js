@@ -74,7 +74,7 @@ var gClean = function () {
             gClean.dbConn = storageService.openDatabase(file); // Will also create the file if it does not exist
             gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS hidden_results (id INTEGER, search TEXT , result TEXT)");
             gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS minimized_results (id INTEGER, search TEXT , result TEXT)");
-            gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS favorite_results (favorize TEXT , http_url TEXT)");
+            gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS favorite_results (search TEXT , result TEXT)");
 
 
             gBrowser.addEventListener("load", gClean.loadReloadOrAddTab, true);
@@ -162,7 +162,7 @@ var gClean = function () {
                                                 elm.setAttribute('id', result);
                                                 elm.setAttribute('name', result_domain);
 
-                                                if (GClean_extra.exists_hidden("all", result) || GClean_extra.exists_hidden(search, result) || GClean_extra.exists_hidden(false, result_domain)) {
+                                                if (GClean_extra.exists_hidden("all", result) || GClean_extra.exists_hidden(search, result) || GClean_extra.exists_hidden("domain", result_domain)) {
                                                     gCleanPrepareResults.toggle(elm, doc, search);
 
                                                     if (elm.className.indexOf('hidden_off') == -1)
@@ -699,18 +699,18 @@ var GClean_extra = {
 
             var statement;
             if (result && search) {
-                condition = "SELECT search,result FROM hidden_results WHERE result = :result AND search = :search";
+                condition = "SELECT search,result FROM favorite_results WHERE result = :result AND search = :search";
                 statement = gClean.dbConn.createStatement(condition);
                 statement.params.result = result;
                 statement.params.search = search;
             }
             else if (!result && search) {
-                condition = "SELECT search FROM hidden_results WHERE search = :search";
+                condition = "SELECT search FROM favorite_results WHERE search = :search";
                 statement = gClean.dbConn.createStatement(condition);
                 statement.params.search = search;
             }
             else if (result && !search) {
-                condition = "SELECT result FROM hidden_results WHERE result = :result";
+                condition = "SELECT result FROM favorite_results WHERE result = :result";
                 statement = gClean.dbConn.createStatement(condition);
                 statement.params.result = result;
             }
@@ -786,7 +786,7 @@ var gCleanPrepareResults = {
                 gCleanPrepareResults.add_option(true, false, false, true, false, true, result, search, elm);
             } else if (GClean_extra.exists_hidden("all", result)) {
                 gCleanPrepareResults.add_option(false, true, true, false, false, true, result, search, elm);
-            } else if (GClean_extra.exists_hidden(false, result_domain)) {
+            } else if (GClean_extra.exists_hidden("domain", result_domain)) {
                 gCleanPrepareResults.add_option(false, false, false, false, true, false, result_domain, '', elm);
             }
             else {
@@ -797,25 +797,37 @@ var gCleanPrepareResults = {
     add_option:function (add, remove, add_all, remove_all, add_domain, remove_domain, result, search, elm) {
         var toggleHiddenElement = content.document.getElementById('toggle_hidden_elements');
 
+        var favResult = content.document.createElement("div");  //need content.document
+        favResult.id = "favResult";
+        favResult.className = "favResult ";
+        favResult.title = "Fav Result";
+        favResult.style.cursor = "pointer";
+        favResult.innerHTML = "favResult";
+        var favDomain = content.document.createElement("div");  //need content.document
+        favDomain.id = "favDomain";
+        favDomain.className = "favDomain ";
+        favDomain.title = "Fav Domain";
+        favDomain.style.cursor = "pointer";
+        favDomain.innerHTML = "favDomain";
         var one = content.document.createElement("div");  //need content.document
         one.id = "one";
         one.className = "one ";
         one.title = "Hide for this search";
         one.style.cursor = "pointer";
-        one.innerHTML = "X";
+        //one.innerHTML = "X";
         var two = content.document.createElement("div");  //need content.document
         two.id = "two";
         two.className = "two ";
         two.title = "Hide always";
         two.style.cursor = "pointer";
-        two.innerHTML = "A";
+        //two.innerHTML = "A";
         var three = content.document.createElement("div");  //need content.document
         three.id = "three";
         three.className = "three ";
         var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
-        three.title = "Hide Domain "+result_domain;
+        three.title = "Hide Domain " + result_domain;
         three.style.cursor = "pointer";
-        three.innerHTML = "D";
+        //three.innerHTML = "D";
         if (add) {
             one.title = "Show for this search";
             one.className = "one r_here";
@@ -853,41 +865,63 @@ var gCleanPrepareResults = {
 
         }, true);
         if (add_domain) {
-            three.title = "Show Domain "+result_domain;
+            three.title = "Show Domain " + result_domain;
             three.className = "three r_domain";
             one.innerHTML = "";
             two.innerHTML = "";
         }
         else if (remove_domain) {
-            three.title = "Hide Domain "+result_domain;
+            three.title = "Hide Domain " + result_domain;
             three.className = "three a_domain";
         }
         three.addEventListener("click", function () {
-            if (this.title == "Hide Domain "+result_domain) {
-                this.title = "Show Domain "+result_domain;
+            if (this.title == "Hide Domain " + result_domain) {
+                this.title = "Show Domain " + result_domain;
                 gCleanResultActions.remove_result_from_search(false, true, result, search);
             } else {
-                this.title = "Hide Domain "+result_domain;
+                this.title = "Hide Domain " + result_domain;
 
 
                 gCleanResultActions.add_result_to_search(false, true, result, search);
+            }
+        }, true);
+        favResult.addEventListener("click", function () {
+            if (GClean_extra.exists_favorite(false, result)) {
+                gCleanResultActions.remove_favorite(search, result);
+            } else {
+                gCleanResultActions.add_favorite(search, result);
+            }
+        }, true);
+        favDomain.addEventListener("click", function () {
+            var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
+            if (GClean_extra.exists_favorite("domain", result_domain)) {
+                gCleanResultActions.remove_favorite("domain", result_domain);
+            } else {
+                gCleanResultActions.add_favorite("domain", result_domain);
             }
         }, true);
         var list_child = elm.childNodes[0];
         elm.insertBefore(one, list_child);
         elm.insertBefore(two, list_child);
         elm.insertBefore(three, list_child);
+        //TODO style fav buttons
+        //elm.insertBefore(favResult, list_child);
+        //elm.insertBefore(favDomain, list_child);
 
     }
 };//dont remove the brakets!!!!!!!!!!!
 var gCleanResultActions = {
     minimize:function (result) {
-
         GClean_extra.do_statement(false, result, "INSERT INTO minimized_results (result) SELECT :result WHERE NOT EXISTS (SELECT 1 FROM minimized_results WHERE result = :result );");
-
     },
     maximize:function (result) {
         GClean_extra.do_statement(false, result, "DELETE FROM minimized_results WHERE result = :result");
+    },
+    add_favorite:function (search, result) {
+        GClean_extra.do_statement(search, result, "INSERT INTO favorite_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM favorite_results WHERE search = :search AND result = :result );");
+    },
+    remove_favorite:function (search, result) {
+        GClean_extra.do_statement(search, result, "DELETE FROM favorite_results WHERE search = :search AND result = :result");
     },
     remove_result_from_search:function (all, domain, result, search) {
         var one;
@@ -897,16 +931,12 @@ var gCleanResultActions = {
         var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
         var toggleHiddenElement = doc.getElementById('toggle_hidden_elements').innerHTML;
         if (domain) {
-            if (GClean_extra.exists_hidden(false, result)) {
-                GClean_extra.do_statement(false, result, "DELETE FROM hidden_results WHERE result = :result");
-            }
-            if (GClean_extra.exists_hidden("all", result)) {
-                GClean_extra.do_statement("all", result, "DELETE FROM hidden_results WHERE search = :search AND result = :result");
-            }
+
             GClean_extra.do_statement("domain", result_domain, "INSERT INTO hidden_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM hidden_results WHERE search = :search AND result = :result );");
             var list = doc.getElementsByName(result_domain);
             for (var i = 0, il = list.length; i < il; i++) {
 
+                GClean_extra.do_statement(false, list[i].id, "DELETE FROM hidden_results WHERE result = :result");
 
                 if (toggleHiddenElement == "SHOW HIDDEN RESULTS" || toggleHiddenElement == "") {
 
@@ -922,7 +952,7 @@ var gCleanResultActions = {
                 one.className = one.className.replace("r_here", "");
                 one.className = one.className.replace("a_here", "");
                 one.innerHTML = "";
-                
+
 
                 //two
                 two = list[i].getElementsByClassName("two")[0];
@@ -943,8 +973,8 @@ var gCleanResultActions = {
                 if (GClean_extra.exists_hidden(false, result)) {
                     GClean_extra.do_statement(false, result, "DELETE FROM hidden_results WHERE result = :result");
                 }
-                else if (GClean_extra.exists_hidden(false, result_domain)) {
-                    GClean_extra.do_statement(false, result_domain, "DELETE FROM hidden_results WHERE result = :result");
+                else if (GClean_extra.exists_hidden("domain", result_domain)) {
+                    GClean_extra.do_statement("domain", result_domain, "DELETE FROM hidden_results WHERE search = :search AND result = :result");
                 }
                 GClean_extra.do_statement("all", result, "INSERT INTO hidden_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM hidden_results WHERE search = :search AND result = :result );");
 
@@ -965,8 +995,8 @@ var gCleanResultActions = {
                 if (GClean_extra.exists_hidden("all", result)) {
                     GClean_extra.do_statement("all", result, "DELETE FROM hidden_results WHERE search = :search AND result = :result");
                 }
-                else if (GClean_extra.exists_hidden(false, result_domain)) {
-                    GClean_extra.do_statement(false, result_domain, "DELETE FROM hidden_results WHERE result = :result");
+                else if (GClean_extra.exists_hidden("domain", result_domain)) {
+                    GClean_extra.do_statement("domain", result_domain, "DELETE FROM hidden_results WHERE search = :search AND result = :result");
                 }
                 GClean_extra.do_statement(search, result, "INSERT INTO hidden_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM hidden_results WHERE search = :search AND result = :result );");
                 result_element.children[0].title = "Show for this search";
@@ -1016,22 +1046,22 @@ var gCleanResultActions = {
         if (domain) {
             var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
 
-            GClean_extra.do_statement(false, result_domain, "DELETE FROM hidden_results WHERE result = :result");
+            GClean_extra.do_statement("domain", result_domain, "DELETE FROM hidden_results WHERE search = :search AND result = :result");
             var list = doc.getElementsByName(result_domain);
             for (var i = 0, il = list.length; i < il; i++) {
                 list[i].className = list[i].className.replace('hidden_on', '');
                 list[i].children[0].title = "Hide for this search";
                 list[i].children[1].title = "Hide always";
-                list[i].children[2].title = "Hide Domain "+result_domain;
+                list[i].children[2].title = "Hide Domain " + result_domain;
 
                 //one
                 one = list[i].getElementsByClassName("one")[0];
-                one.className = one.className + " a_here";
-                one.innerHTML="X";
+                one.className = "one a_here";
+                //one.innerHTML = "X";
                 //two
                 two = list[i].getElementsByClassName("two")[0];
-                two.className = two.className + " a_always";
-                two.innerHTML="A";
+                two.className = "two a_always";
+                //two.innerHTML = "A";
                 //three
                 three = list[i].getElementsByClassName("three")[0];
                 three.className = three.className.replace("r_domain", "a_domain");
