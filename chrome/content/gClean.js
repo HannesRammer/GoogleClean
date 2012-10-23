@@ -804,7 +804,7 @@ var gCleanPrepareResults = {
                 if (GClean_extra.exists_favorite(false, result)) {
                     this.className = "aStarOff";
                     this.title = "Add result to favorite";
-                    gCleanResultActions.remove_favorite(search, result);
+                    gCleanResultActions.remove_favorite(false, result);
                 } else {
                     this.className = "aStarOn";
                     this.title = "Remove result from favorite";
@@ -865,7 +865,11 @@ var gCleanResultActions = {
         GClean_extra.do_statement(search, result, "INSERT INTO favorite_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM favorite_results WHERE search = :search AND result = :result );");
     },
     remove_favorite:function (search, result) {
-        GClean_extra.do_statement(search, result, "DELETE FROM favorite_results WHERE search = :search AND result = :result");
+        if(search){
+            GClean_extra.do_statement(search, result, "DELETE FROM favorite_results WHERE search = :search AND result = :result");
+        }else{
+            GClean_extra.do_statement(false, result, "DELETE FROM favorite_results WHERE result = :result");
+        }
     },
     remove_result_from_search:function (all, domain, result, search) {
         var one;
