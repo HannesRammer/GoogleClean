@@ -8,117 +8,71 @@ var gClean = function () {
         },
 
         loadReloadOrAddTab:function () {
-            try {
-                //global_tab_cont = gBrowser.tabContainer.childNodes.length;
-
-                //for (var i = 0; i < gBrowser.browsers.length; i++) {
-
-                setInterval(function () {
-                    //    var b = gBrowser.getBrowserAtIndex(i);
-                    var b = gBrowser;
-
-                    if (b && b.contentDocument && b.currentURI) {
-
-                        var cD = b.contentDocument;
-                        var body = cD.getElementsByTagName('body')[0];
-                        if (body && body.className.indexOf('theme_') == -1) {
-
-                            var currentURI = b.currentURI.spec;
-                            if (currentURI.indexOf('google.') > -1) {
-                                if (currentURI.indexOf('plus.google.') == -1
-                                    && currentURI.indexOf('maps.google.') == -1
-                                    && currentURI.indexOf('play.google.') == -1
-                                    && currentURI.indexOf('news.google.') == -1
-                                    && currentURI.indexOf('mail.google.') == -1
-                                    && currentURI.indexOf('drive.google.') == -1
-                                    && currentURI.indexOf('translate.google.') == -1
-                                    && currentURI.indexOf('books.google.') == -1
-                                    && currentURI.indexOf('video.google.') == -1
-                                    ) {
-
-
-                                    gClean.repeatRun(cD);
-                                }
+            setInterval(function () {
+                var b = gBrowser;
+                if (b && b.contentDocument && b.currentURI) {
+                    var cD = b.contentDocument;
+                    var body = cD.getElementsByTagName('body')[0];
+                    if (body && body.className.indexOf('theme_') == -1) {
+                        var currentURI = b.currentURI.spec;
+                        if (currentURI.indexOf('google.') > -1) {
+                            if (currentURI.indexOf('plus.google.') == -1
+                                && currentURI.indexOf('maps.google.') == -1
+                                && currentURI.indexOf('play.google.') == -1
+                                && currentURI.indexOf('news.google.') == -1
+                                && currentURI.indexOf('mail.google.') == -1
+                                && currentURI.indexOf('drive.google.') == -1
+                                && currentURI.indexOf('translate.google.') == -1
+                                && currentURI.indexOf('books.google.') == -1
+                                && currentURI.indexOf('video.google.') == -1
+                                ) {
+                                gClean.repeatRun(cD);
                             }
                         }
                     }
-
-
-                }, 500);
-                //}
-                // Do, or call to, all your code here.
-            } catch (e) {
-                try {
-                    if (e.stack) {
-
-
-                    }
-                    // Show the error console.
-                    toJavaScriptConsole();
-                } finally {
-                    throw e;
                 }
-            }
-
+            }, 500);
         },
-
 
         init:function () {
             var file = Components.classes["@mozilla.org/file/directory_service;1"]
                 .getService(Components.interfaces.nsIProperties)
                 .get("ProfD", Components.interfaces.nsIFile);
             file.append("gCleanDatabase.sqlite");
-
             var storageService = Components.classes["@mozilla.org/storage/service;1"]
                 .getService(Components.interfaces.mozIStorageService);
             gClean.dbConn = storageService.openDatabase(file); // Will also create the file if it does not exist
             gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS hidden_results (id INTEGER, search TEXT , result TEXT)");
             gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS minimized_results (id INTEGER, search TEXT , result TEXT)");
             gClean.dbConn.executeSimpleSQL("CREATE TABLE IF NOT EXISTS favorite_results (search TEXT , result TEXT)");
-
-
             gBrowser.addEventListener("load", gClean.loadReloadOrAddTab, true);
-            //gBrowser.addEventListener("load", gClean.loadReloadOrAddTab, true);
-            // var container = gBrowser.tabContainer;
-            //  container.addEventListener("TabOpen", gClean.loadReloadOrAddTab, false);
         },
 
         run:function (doc) {
             var head = doc.getElementsByTagName("head")[0];
             var search_id_div = doc.getElementById("search");
             if (search_id_div) {
-                //alert("searchdiv");
-
                 var ires = doc.getElementById("ires");
                 if (ires) {
                     var ol = ires.getElementsByTagName("ol")[0];
                     if (ol) {
-                        //      alert("ol");
-
                         var allList = ol.children;
-                        var appbar = doc.getElementById("appbar");
-
-                        if (doc.getElementById('leftnav'))
+                        if (doc.getElementById('leftnav')) {
                             doc.getElementById("leftnav").style.background = "none repeat scroll 0 0";
-                        if (doc.getElementById('tbd'))
+                        }
+                        if (doc.getElementById('tbd')) {
                             doc.getElementById("tbd").style.background = "none repeat scroll 0 0";
-
-                        console.log(doc.getElementById('style_select'));
+                        }
                         if (doc.getElementById('style_select')) {
-                            //alert("select_style=true");
                             if (doc.cookie.split('style=')[1]) {
                                 doc.getElementsByTagName('body')[0].className = 'theme_' + doc.cookie.split('style=')[1].split(';')[0];
                             }
                         } else {
-                            //alert("select_style=false");
                             gCleanStyle.load_dropdown_options(doc);
                         }
-
-
                         if (doc.getElementsByTagName("form")[0]) {
                             var search_form = doc.getElementsByTagName("form")[0];
                             if (doc.getElementsByName("num")[0]) {
-
                             } else {
                                 var input = doc.createElement("input");
                                 input.setAttribute("type", "hidden");
@@ -126,47 +80,36 @@ var gClean = function () {
                                 input.setAttribute("id", "num");
                                 input.setAttribute("value", "50");
                                 search_form.appendChild(input);
-
                             }
-
-
                             var foundLinks = 0;
                             var style = doc.getElementById("g-clean-style");
                             if (!style) {
                                 style = doc.createElement("link");
                                 style.id = "g-clean-style";
                                 style.type = "text/css";
-
                                 style.rel = "stylesheet";
                                 style.href = "chrome://gclean/skin/my_style.css";
                                 if (head) {
-
                                     head.appendChild(style);
                                 }
-
                             }
                             if (doc.getElementsByName("q") && doc.getElementsByName("q")[0]) {
-                                //  alert("be4 list");
-
                                 var search = doc.getElementsByName("q")[0].value;
                                 for (var i = 0, il = allList.length; i < il; i++) {
                                     var elm = allList[i];
-                                    if (elm && elm.getElementsByTagName("h3") && elm.getElementsByTagName("h3")[0]) {
-
+                                    if (elm && elm.id != "videobox" && elm.getElementsByTagName("h3") && elm.getElementsByTagName("h3")[0]) {
                                         if (elm.getAttribute("class") && elm.getAttribute("class").indexOf("g") >= 0) {
                                             var href = elm.getElementsByTagName("h3")[0].childNodes[0].href || "";
                                             if (href != "") {
                                                 var result = GClean_extra.clean_result_string(href);
                                                 var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
-
                                                 elm.setAttribute('id', result);
                                                 elm.setAttribute('name', result_domain);
-
                                                 if (GClean_extra.exists_hidden("all", result) || GClean_extra.exists_hidden(search, result) || GClean_extra.exists_hidden("domain", result_domain)) {
                                                     gCleanPrepareResults.toggle(elm, doc, search);
-
-                                                    if (elm.className.indexOf('hidden_off') == -1)
-                                                        elm.className += " hidden_off"
+                                                    if (elm.className.indexOf('hidden_off') == -1) {
+                                                        elm.className += " hidden_off";
+                                                    }
                                                 }
                                                 else {
                                                     gCleanPrepareResults.toggle(elm, doc, search);
@@ -197,9 +140,7 @@ var gClean = function () {
                                 } else {
                                     toggle_result = doc.createElement("div");
                                     toggle_result.setAttribute("id", "toggle_hidden_elements");
-
                                     toggle_result.innerHTML = "";
-
                                     toggle_result.addEventListener("click", function () {
                                         gCleanStyle.toggle_hidden();
                                     }, true);
@@ -213,28 +154,23 @@ var gClean = function () {
                                 } else {
                                     toggle_result.innerHTML = "";
                                     toggle_result.className = "";
-
                                 }
-
                             }
                         }
-
                     }
                 }
             }
-
+            gCleanPrepareResults.sortFavResults();
         }
     };
-}();//dont remove the brakets!!!!!!!!!!!
+}();
 var gCleanStyle = function () {
     return {
-
         toggle_border:function () {
-            label_on = "Border OFF";
-            label_off = "Border ON";
+            var label_on = "Border OFF";
+            var label_off = "Border ON";
             if (content.document.getElementById("style_border").innerHTML == label_on) {
                 GClean_extra.setCookie("border=true");
-
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_border") > -1) {
                     content.document.getElementsByTagName('body')[0].className = content.document.getElementsByTagName('body')[0].className.replace("no_border", "");
                 }
@@ -243,77 +179,58 @@ var gCleanStyle = function () {
             }
             else if (content.document.getElementById("style_border").innerHTML == label_off) {
                 GClean_extra.setCookie("border=false");
-
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_border") == -1) {
                     content.document.getElementsByTagName('body')[0].className += " no_border";
                 }
                 content.document.getElementById("style_border").innerHTML = label_on;
                 content.document.getElementById("style_border").className = "off";
-
             }
-
         },
 
         toggle_shadow:function () {
-            label_on = "Shadow OFF";
-            label_off = "Shadow ON";
+            var label_on = "Shadow OFF";
+            var label_off = "Shadow ON";
             if (content.document.getElementById("style_shadow").innerHTML == label_on) {
                 GClean_extra.setCookie("shadow=true");
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_shadow") > -1) {
                     content.document.getElementsByTagName('body')[0].className = content.document.getElementsByTagName('body')[0].className.replace("no_shadow", "");
                 }
-
                 content.document.getElementById("style_shadow").innerHTML = label_off;
                 content.document.getElementById("style_shadow").className = "on";
-
             }
             else if (content.document.getElementById("style_shadow").innerHTML == label_off) {
                 GClean_extra.setCookie("shadow=false");
-
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_shadow") == -1) {
                     content.document.getElementsByTagName('body')[0].className += " no_shadow";
-
                 }
                 content.document.getElementById("style_shadow").innerHTML = label_on;
                 content.document.getElementById("style_shadow").className = "off";
-
             }
-
         },
 
         toggle_round_corner:function () {
-            label_on = "Round corner OFF";
-            label_off = "Round corner ON";
-
+            var label_on = "Round corner OFF";
+            var label_off = "Round corner ON";
             if (content.document.getElementById("style_round_corner").innerHTML == label_on) {
                 GClean_extra.setCookie("round_corner=true");
-
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_round_corner") > -1) {
-
                     content.document.getElementsByTagName('body')[0].className = content.document.getElementsByTagName('body')[0].className.replace("no_round_corner", "");
-
                 }
                 content.document.getElementById("style_round_corner").innerHTML = label_off;
                 content.document.getElementById("style_round_corner").className = "on";
-
             }
             else if (content.document.getElementById("style_round_corner").innerHTML == label_off) {
                 GClean_extra.setCookie("round_corner=false");
-
                 if (content.document.getElementsByTagName('body')[0].className.indexOf("no_round_corner") == -1) {
                     content.document.getElementsByTagName('body')[0].className += " no_round_corner";
-
                 }
                 content.document.getElementById("style_round_corner").innerHTML = label_on;
                 content.document.getElementById("style_round_corner").className = "off";
-
             }
         },
 
         load_dropdown_options:function (doc) {
-            //alert("load dropdown option")
             var style_vars = [
-                //["NONE", "#ffffff"],
                 ["AliceBlue", "#F0F8FF"],
                 ["AntiqueWhite", "#FAEBD7"],
                 ["Aqua", "#00FFFF"],
@@ -483,11 +400,9 @@ var gCleanStyle = function () {
                 var option = doc.createElement("option");
                 option.setAttribute("name", "style_options");
                 if (style_length < style_vars[i][0].length && GClean_extra.getCookie(style_vars[i][0]) > -1) {
-
                     style_length = style_vars[i][0].length;
                     option.setAttribute("selected", "selected");
                     new_style = 'theme_' + style_vars[i][0];
-
                 } else {
                     // new_style = '';
                 }
@@ -499,7 +414,6 @@ var gCleanStyle = function () {
             select.addEventListener("change", function () {
                 gCleanStyle.selected_style();
             }, true);
-
             stylebox.appendChild(prev);
             stylebox.appendChild(select);
             stylebox.appendChild(next);
@@ -513,7 +427,6 @@ var gCleanStyle = function () {
             }, true);
             stylebox.appendChild(border);
             //END border
-
             //START  shadow
             var shadow = doc.createElement("span");
             shadow.style.cursor = "pointer";
@@ -525,7 +438,6 @@ var gCleanStyle = function () {
             }, true);
             //END border
             stylebox.appendChild(shadow);
-
             //START  round_corner
             var round_corner = doc.createElement("span");
             round_corner.style.cursor = "pointer";
@@ -538,7 +450,6 @@ var gCleanStyle = function () {
             //END border
             stylebox.appendChild(round_corner);
             var cnt = doc.getElementById("cnt");
-
             if (cnt) {
                 var resultStats = doc.getElementById("resultStats");
                 if (resultStats) {
@@ -558,56 +469,52 @@ var gCleanStyle = function () {
                 new_style += " no_shadow";
                 content.document.getElementById("style_shadow").innerHTML = "Shadow OFF";
                 content.document.getElementById("style_shadow").className = "off";
-
             } else {
                 content.document.getElementById("style_shadow").innerHTML = "Shadow ON";
                 content.document.getElementById("style_shadow").className = "on";
-
             }
             if (GClean_extra.getCookie("round_corner=false") > -1) {
                 new_style += " no_round_corner";
                 content.document.getElementById("style_round_corner").innerHTML = "Round corner OFF";
                 content.document.getElementById("style_round_corner").className = "off";
-
             } else {
                 content.document.getElementById("style_round_corner").innerHTML = "Round corner ON";
                 content.document.getElementById("style_round_corner").className = "on";
-
             }
             doc.getElementsByTagName('body')[0].className = new_style;
         },
-        next_style:function () {
 
-            drop_down = content.document.getElementById('style_select');
-            new_index = drop_down.selectedIndex + 1;
+        next_style:function () {
+            var drop_down = content.document.getElementById('style_select');
+            var new_index = drop_down.selectedIndex + 1;
             if (new_index >= 0 && drop_down.options[new_index]) {
             } else {
                 new_index = 0;
             }
-            color = drop_down.options[new_index].value;
-            next_color = drop_down.options[new_index + 1].style.backgroundColor;
+            var color = drop_down.options[new_index].value;
+            var next_color = drop_down.options[new_index + 1].style.backgroundColor;
             drop_down.selectedIndex = new_index;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color)
+            GClean_extra.setCookie("style=" + color);
         },
 
         previous_style:function () {
-            drop_down = content.document.getElementById('style_select');
-            new_index = drop_down.selectedIndex - 1;
+            var drop_down = content.document.getElementById('style_select');
+            var new_index = drop_down.selectedIndex - 1;
             if (new_index >= 0 && drop_down.options[new_index]) {
             } else {
                 new_index = drop_down.length - 1;
             }
-            color = drop_down.options[new_index].value;
+            var color = drop_down.options[new_index].value;
             drop_down.selectedIndex = new_index;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color)
+            GClean_extra.setCookie("style=" + color);
         },
         selected_style:function () {
-            drop_down = content.document.getElementById('style_select');
-            color = drop_down.options[drop_down.selectedIndex].value;
+            var drop_down = content.document.getElementById('style_select');
+            var color = drop_down.options[drop_down.selectedIndex].value;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color)
+            GClean_extra.setCookie("style=" + color);
         },
         updateStyle:function () {
             var cn = content.document.getElementsByTagName('body')[0].className;
@@ -618,7 +525,7 @@ var gCleanStyle = function () {
 
 
         toggle_hidden:function () {
-
+            var s1, s2, s3;
             if (content.document.getElementsByClassName('hidden_off') && content.document.getElementsByClassName('hidden_off').length > 0) {
                 s1 = 'hidden_off';
                 s2 = 'hidden_on';
@@ -639,7 +546,7 @@ var gCleanStyle = function () {
         }
     };
 }
-    ();//dont remove the brakets!!!!!!!!!!!
+    ();
 
 var GClean_extra = {
         setCookie:function (data) {
@@ -659,8 +566,8 @@ var GClean_extra = {
         },
 
         exists_minimized:function (result) {
-            condition = "SELECT result FROM minimized_results WHERE result = :result";
-            statement = gClean.dbConn.createStatement(condition);
+            var condition = "SELECT result FROM minimized_results WHERE result = :result";
+            var statement = gClean.dbConn.createStatement(condition);
             statement.params.result = result;
             var exists = false;
             while (statement.executeStep()) {
@@ -670,7 +577,7 @@ var GClean_extra = {
             return exists;
         },
         exists_hidden:function (search, result) {
-
+            var condition;
             var statement;
             if (result && search) {
                 condition = "SELECT search,result FROM hidden_results WHERE result = :result AND search = :search";
@@ -734,20 +641,20 @@ var GClean_extra = {
     }
     ;
 var gCleanPrepareResults = {
-    toggle:function (elm, doc, search) {
-        //elm.style.overflow = "hidden";
-        elm.style.position = "relative";
-        if (elm.className.indexOf('nice_outer_div') == -1)
-            elm.className += " nice_outer_div";
-        if (elm.className.indexOf('parent_on') == -1)
-            elm.className += " parent_on";
-        var result = elm.getElementsByTagName('h3')[0].childNodes[0].href;
-        if (result.indexOf('google.') > -1 && result.indexOf('url=') > -1) {
-            result = unescape(result.split('url=')[1].split('&')[0]);
-        }
-        gCleanPrepareResults.prepare_result(result, search, elm);
+        toggle:function (elm, doc, search) {
+            //elm.style.overflow = "hidden";
+            elm.style.position = "relative";
+            if (elm.className.indexOf('nice_outer_div') == -1)
+                elm.className += " nice_outer_div";
+            if (elm.className.indexOf('parent_on') == -1)
+                elm.className += " parent_on";
+            var result = elm.getElementsByTagName('h3')[0].childNodes[0].href;
+            if (result.indexOf('google.') > -1 && result.indexOf('url=') > -1) {
+                result = unescape(result.split('url=')[1].split('&')[0]);
+            }
+            gCleanPrepareResults.prepare_result(result, search, elm);
 
-        elm.style.backgroundColor = "#ffffff";
+            elm.style.backgroundColor = "#ffffff";
 //        var close = doc.createElement("div");  //need content.document
 //        close.id = "close";
 //        close.className = "min";
@@ -777,139 +684,176 @@ var gCleanPrepareResults = {
 //            elm.insertBefore(close, list_child);
 //
 //        }
-    },
+        },
 
-    prepare_result:function (result, search, elm) {
-        var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
-        if (result.length > 0) {
-            if (GClean_extra.exists_hidden(search, result)) {
-                gCleanPrepareResults.add_option(true, false, false, true, false, true, result, search, elm);
-            } else if (GClean_extra.exists_hidden("all", result)) {
-                gCleanPrepareResults.add_option(false, true, true, false, false, true, result, search, elm);
-            } else if (GClean_extra.exists_hidden("domain", result_domain)) {
-                gCleanPrepareResults.add_option(false, false, false, false, true, false, result_domain, '', elm);
-            }
-            else {
-                gCleanPrepareResults.add_option(false, true, false, true, false, true, result, search, elm);
-            }
-        }
-    },
-    add_option:function (add, remove, add_all, remove_all, add_domain, remove_domain, result, search, elm) {
-        var toggleHiddenElement = content.document.getElementById('toggle_hidden_elements');
-
-        var favResult = content.document.createElement("div");  //need content.document
-        favResult.id = "favResult";
-        favResult.className = "favResult ";
-        favResult.title = "Fav Result";
-        favResult.style.cursor = "pointer";
-        favResult.innerHTML = "favResult";
-        var favDomain = content.document.createElement("div");  //need content.document
-        favDomain.id = "favDomain";
-        favDomain.className = "favDomain ";
-        favDomain.title = "Fav Domain";
-        favDomain.style.cursor = "pointer";
-        favDomain.innerHTML = "favDomain";
-        var one = content.document.createElement("div");  //need content.document
-        one.id = "one";
-        one.className = "one ";
-        one.title = "Hide for this search";
-        one.style.cursor = "pointer";
-        //one.innerHTML = "X";
-        var two = content.document.createElement("div");  //need content.document
-        two.id = "two";
-        two.className = "two ";
-        two.title = "Hide always";
-        two.style.cursor = "pointer";
-        //two.innerHTML = "A";
-        var three = content.document.createElement("div");  //need content.document
-        three.id = "three";
-        three.className = "three ";
-        var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
-        three.title = "Hide Domain " + result_domain;
-        three.style.cursor = "pointer";
-        //three.innerHTML = "D";
-        if (add) {
-            one.title = "Show for this search";
-            one.className = "one r_here";
-        }
-        else if (remove) {
-            one.title = "Hide for this search";
-            one.className = "one a_here";
-        }
-        one.addEventListener("click", function () {
-            if (this.title == "Hide for this search") {
-                this.title = "Show for this search";
-                gCleanResultActions.remove_result_from_search(false, false, result, search);
-            } else {
-                this.title = "Hide for this search";
-                gCleanResultActions.add_result_to_search(false, false, result, search);
-            }
-        }, true);
-
-        if (add_all) {
-            two.title = "Show always";
-            two.className = "two r_always";
-        }
-        else if (remove_all) {
-            two.title = "Hide always";
-            two.className = "two a_always";
-        }
-        two.addEventListener("click", function () {
-            if (this.title == "Hide always") {
-                this.title = "Show always";
-                gCleanResultActions.remove_result_from_search(true, false, result, search);
-            } else {
-                this.title = "Hide always";
-                gCleanResultActions.add_result_to_search(true, false, result, search);
-            }
-
-        }, true);
-        if (add_domain) {
-            three.title = "Show Domain " + result_domain;
-            three.className = "three r_domain";
-            one.innerHTML = "";
-            two.innerHTML = "";
-        }
-        else if (remove_domain) {
-            three.title = "Hide Domain " + result_domain;
-            three.className = "three a_domain";
-        }
-        three.addEventListener("click", function () {
-            if (this.title == "Hide Domain " + result_domain) {
-                this.title = "Show Domain " + result_domain;
-                gCleanResultActions.remove_result_from_search(false, true, result, search);
-            } else {
-                this.title = "Hide Domain " + result_domain;
-
-
-                gCleanResultActions.add_result_to_search(false, true, result, search);
-            }
-        }, true);
-        favResult.addEventListener("click", function () {
-            if (GClean_extra.exists_favorite(false, result)) {
-                gCleanResultActions.remove_favorite(search, result);
-            } else {
-                gCleanResultActions.add_favorite(search, result);
-            }
-        }, true);
-        favDomain.addEventListener("click", function () {
+        prepare_result:function (result, search, elm) {
             var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
-            if (GClean_extra.exists_favorite("domain", result_domain)) {
-                gCleanResultActions.remove_favorite("domain", result_domain);
-            } else {
-                gCleanResultActions.add_favorite("domain", result_domain);
+            if (result.length > 0) {
+                if (GClean_extra.exists_hidden(search, result)) {
+                    gCleanPrepareResults.add_option(true, false, false, true, false, true, result, search, elm);
+                } else if (GClean_extra.exists_hidden("all", result)) {
+                    gCleanPrepareResults.add_option(false, true, true, false, false, true, result, search, elm);
+                } else if (GClean_extra.exists_hidden("domain", result_domain)) {
+                    gCleanPrepareResults.add_option(false, false, false, false, true, false, result_domain, '', elm);
+                }
+                else {
+                    gCleanPrepareResults.add_option(false, true, false, true, false, true, result, search, elm);
+                }
             }
-        }, true);
-        var list_child = elm.childNodes[0];
-        elm.insertBefore(one, list_child);
-        elm.insertBefore(two, list_child);
-        elm.insertBefore(three, list_child);
-        //TODO style fav buttons
-        //elm.insertBefore(favResult, list_child);
-        //elm.insertBefore(favDomain, list_child);
+        },
+        sortFavResults:function () {
+            var ol = content.document.getElementById("ires").getElementsByTagName("ol")[0];
+            var list = ol.children;
+            for (var i = list.length - 1; i >= 0; i--) {
+                if (list[i].children && list[i].children[3] && list[i].children[3].className == "aStarOn") {
+                    ol.insertBefore(list[i], ol.firstChild);
+                }
+            }
+        },
+        add_option:function (add, remove, add_all, remove_all, add_domain, remove_domain, result, search, elm) {
+            var toggleHiddenElement = content.document.getElementById('toggle_hidden_elements');
 
+            var one = content.document.createElement("div");  //need content.document
+            one.id = "one";
+            one.className = "one ";
+            one.title = "Hide for this search";
+            one.style.cursor = "pointer";
+            //one.innerHTML = "X";
+            var two = content.document.createElement("div");  //need content.document
+            two.id = "two";
+            two.className = "two ";
+            two.title = "Hide always";
+            two.style.cursor = "pointer";
+            //two.innerHTML = "A";
+            var three = content.document.createElement("div");  //need content.document
+            three.id = "three";
+            three.className = "three ";
+            var result_domain = result.split('/')[0] + "//" + result.split('/')[2];
+            three.title = "Hide Domain " + result_domain;
+            three.style.cursor = "pointer";
+            //three.innerHTML = "D";
+            if (add) {
+                one.title = "Show for this search";
+                one.className = "one r_here";
+            }
+            else if (remove) {
+                one.title = "Hide for this search";
+                one.className = "one a_here";
+            }
+            one.addEventListener("click", function () {
+                if (this.title == "Hide for this search") {
+                    this.title = "Show for this search";
+                    gCleanResultActions.remove_result_from_search(false, false, result, search);
+                } else {
+                    this.title = "Hide for this search";
+                    gCleanResultActions.add_result_to_search(false, false, result, search);
+                }
+            }, true);
+
+            if (add_all) {
+                two.title = "Show always";
+                two.className = "two r_always";
+            }
+            else if (remove_all) {
+                two.title = "Hide always";
+                two.className = "two a_always";
+            }
+            two.addEventListener("click", function () {
+                if (this.title == "Hide always") {
+                    this.title = "Show always";
+                    gCleanResultActions.remove_result_from_search(true, false, result, search);
+                } else {
+                    this.title = "Hide always";
+                    gCleanResultActions.add_result_to_search(true, false, result, search);
+                }
+
+            }, true);
+            if (add_domain) {
+                three.title = "Show Domain " + result_domain;
+                three.className = "three r_domain";
+                one.innerHTML = "";
+                two.innerHTML = "";
+            }
+            else if (remove_domain) {
+                three.title = "Hide Domain " + result_domain;
+                three.className = "three a_domain";
+            }
+            three.addEventListener("click", function () {
+                if (this.title == "Hide Domain " + result_domain) {
+                    this.title = "Show Domain " + result_domain;
+                    gCleanResultActions.remove_result_from_search(false, true, result, search);
+                } else {
+                    this.title = "Hide Domain " + result_domain;
+
+
+                    gCleanResultActions.add_result_to_search(false, true, result, search);
+                }
+            }, true);
+
+            var favResult = content.document.createElement("div");  //need content.document
+            favResult.id = "favResult";
+            if (GClean_extra.exists_favorite(false, result)) {
+                favResult.className = "aStarOn";
+                favResult.title = "Remove result from favorite";
+            } else {
+                favResult.className = "aStarOff";
+                favResult.title = "Add result to favorite";
+            }
+            favResult.style.cursor = "pointer";
+            favResult.addEventListener("click", function () {
+                if (GClean_extra.exists_favorite(false, result)) {
+                    this.className = "aStarOff";
+                    this.title = "Add result to favorite";
+                    gCleanResultActions.remove_favorite(search, result);
+                } else {
+                    this.className = "aStarOn";
+                    this.title = "Remove result from favorite";
+                    gCleanResultActions.add_favorite(search, result);
+                }
+                gCleanPrepareResults.sortFavResults();
+            }, true);
+
+            result_domain = result.split('/')[0] + "//" + result.split('/')[2];
+            var favDomain = content.document.createElement("div");  //need content.document
+            favDomain.id = "favDomain";
+            if (GClean_extra.exists_favorite("domain", result_domain)) {
+                favDomain.className = "dStarOn";
+                favDomain.title = "Remove " + result_domain + " from favorite";
+            } else {
+                favDomain.className = "dStarOff";
+                favDomain.title = "Add " + result_domain + " to favorite";
+            }
+            favDomain.style.cursor = "pointer";
+
+            favDomain.addEventListener("click", function () {
+                var list = content.document.getElementsByName(result_domain);
+
+                if (GClean_extra.exists_favorite("domain", result_domain)) {
+                    for (var i = 0, il = list.length; i < il; i++) {
+                        list[i].children[4].className = "dStarOff";
+                        list[i].children[4].title = "Add " + result_domain + " to favorite";
+                    }
+                    gCleanResultActions.remove_favorite("domain", result_domain);
+                } else {
+                    for (var i = 0, il = list.length; i < il; i++) {
+                        list[i].children[4].className = "dStarOn";
+                        list[i].children[4].title = "Remove " + result_domain + " from favorite";
+                    }
+                    gCleanResultActions.add_favorite("domain", result_domain);
+                }
+
+            }, true);
+            var list_child = elm.childNodes[0];
+            elm.insertBefore(one, list_child);
+            elm.insertBefore(two, list_child);
+            elm.insertBefore(three, list_child);
+            //TODO style fav buttons
+            elm.insertBefore(favResult, list_child);
+            elm.insertBefore(favDomain, list_child);
+
+        }
     }
-};//dont remove the brakets!!!!!!!!!!!
+    ;//dont remove the brakets!!!!!!!!!!!
 var gCleanResultActions = {
     minimize:function (result) {
         GClean_extra.do_statement(false, result, "INSERT INTO minimized_results (result) SELECT :result WHERE NOT EXISTS (SELECT 1 FROM minimized_results WHERE result = :result );");
