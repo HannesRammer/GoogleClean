@@ -1,5 +1,6 @@
 var gClean = function () {
     return {
+        color:"",
         dbConn:null,
         repeatRun:function (cD) {
             if (cD && !cD.getElementsByClassName("one")[0] && cD.getElementsByTagName('body')[0] && cD.getElementsByTagName('body')[0].className == "") {
@@ -491,11 +492,11 @@ var gCleanStyle = function () {
             } else {
                 new_index = 0;
             }
-            var color = drop_down.options[new_index].value;
-            var next_color = drop_down.options[new_index + 1].style.backgroundColor;
+            gClean.color = drop_down.options[new_index].value;
+            //var next_color = drop_down.options[new_index + 1].style.backgroundColor;
             drop_down.selectedIndex = new_index;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color);
+            GClean_extra.setCookie("style=" + gClean.color);
         },
 
         previous_style:function () {
@@ -505,21 +506,21 @@ var gCleanStyle = function () {
             } else {
                 new_index = drop_down.length - 1;
             }
-            var color = drop_down.options[new_index].value;
+            gClean.color = drop_down.options[new_index].value;
             drop_down.selectedIndex = new_index;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color);
+            GClean_extra.setCookie("style=" + gClean.color);
         },
         selected_style:function () {
             var drop_down = content.document.getElementById('style_select');
-            var color = drop_down.options[drop_down.selectedIndex].value;
+            gClean.color = drop_down.options[drop_down.selectedIndex].value;
             gCleanStyle.updateStyle();
-            GClean_extra.setCookie("style=" + color);
+            GClean_extra.setCookie("style=" + gClean.color);
         },
         updateStyle:function () {
             var cn = content.document.getElementsByTagName('body')[0].className;
             var acn = cn.split(" ");
-            acn[0] = "theme_" + color;
+            acn[0] = "theme_" + gClean.color;
             content.document.getElementsByTagName('body')[0].className = acn.join(" ");
         },
 
@@ -545,8 +546,7 @@ var gCleanStyle = function () {
             content.document.getElementById("toggle_hidden_elements").innerHTML = s3;
         }
     };
-}
-    ();
+}();
 
 var GClean_extra = {
         setCookie:function (data) {
@@ -603,7 +603,7 @@ var GClean_extra = {
             return exists;
         },
         exists_favorite:function (search, result) {
-
+            var condition;
             var statement;
             if (result && search) {
                 condition = "SELECT search,result FROM favorite_results WHERE result = :result AND search = :search";
@@ -827,15 +827,16 @@ var gCleanPrepareResults = {
 
             favDomain.addEventListener("click", function () {
                 var list = content.document.getElementsByName(result_domain);
-
+                var i;
+                var il;
                 if (GClean_extra.exists_favorite("domain", result_domain)) {
-                    for (var i = 0, il = list.length; i < il; i++) {
+                    for (i = 0, il = list.length; i < il; i++) {
                         list[i].children[4].className = "dStarOff";
                         list[i].children[4].title = "Add " + result_domain + " to favorite";
                     }
                     gCleanResultActions.remove_favorite("domain", result_domain);
                 } else {
-                    for (var i = 0, il = list.length; i < il; i++) {
+                    for (i = 0, il = list.length; i < il; i++) {
                         list[i].children[4].className = "dStarOn";
                         list[i].children[4].title = "Remove " + result_domain + " from favorite";
                     }
@@ -855,12 +856,6 @@ var gCleanPrepareResults = {
     }
     ;//dont remove the brakets!!!!!!!!!!!
 var gCleanResultActions = {
-    minimize:function (result) {
-        GClean_extra.do_statement(false, result, "INSERT INTO minimized_results (result) SELECT :result WHERE NOT EXISTS (SELECT 1 FROM minimized_results WHERE result = :result );");
-    },
-    maximize:function (result) {
-        GClean_extra.do_statement(false, result, "DELETE FROM minimized_results WHERE result = :result");
-    },
     add_favorite:function (search, result) {
         GClean_extra.do_statement(search, result, "INSERT INTO favorite_results (search, result) SELECT :search,:result WHERE NOT EXISTS (SELECT 1 FROM favorite_results WHERE search = :search AND result = :result );");
     },
