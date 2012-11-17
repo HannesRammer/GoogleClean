@@ -11,9 +11,9 @@
 			<key id="g-clean-run-key" modifiers="accel alt shift" key="L" oncommand="gClean.run();"/>
 		</keyset-->
 		
-		<statusbar id="status-bar">
+		<!--statusbar id="status-bar">
 			<statusbarpanel id="g-clean-status-bar-icon" class="statusbarpanel-iconic" src="chrome://gclean/skin/status-bar.png" tooltiptext="&rungclean;" onclick="gClean.run(document)" />
-		</statusbar>
+		</statusbar-->
 		
 		<!--toolbarpalette id="BrowserToolbarPalette">
 			<toolbarbutton id="g-clean-toolbar-button" label="G Clean" tooltiptext="&rungclean;" oncommand="gClean.run()"/>
